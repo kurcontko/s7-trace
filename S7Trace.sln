@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S7Trace", "S7Trace\S7Trace.csproj", "{0BD37671-0BFE-4535-8DF3-9F9C50B5B7EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0BD37671-0BFE-4535-8DF3-9F9C50B5B7EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BD37671-0BFE-4535-8DF3-9F9C50B5B7EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BD37671-0BFE-4535-8DF3-9F9C50B5B7EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BD37671-0BFE-4535-8DF3-9F9C50B5B7EA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D856E1F1-373D-4039-91F1-33BEA97C0270}
+	EndGlobalSection
+EndGlobal

@@ -1,7 +1,7 @@
 # S7Trace
 Real-time PLC Data Charting Application
 
-This application is a WPF-based real-time charting tool for visualizing data from PLCs (Programmable Logic Controllers) using the S7 communication protocol. The application allows users to configure PLC variables, connect to the PLC, and display real-time data on charts.
+This application is a WPF-based real-time charting tool for visualizing data from PLCs using the S7 communication protocol. The application allows users to configure PLC variables, connect to the PLC, and display real-time data on charts.
 
 ## Features
 

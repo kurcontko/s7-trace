@@ -17,9 +17,10 @@ Here are some features and improvements planned for future releases:
 
 - Implement MVVM (Model-View-ViewModel) design pattern
 - Improve charting performance by optimizing data handling and rendering
-- Add support for multiple PLC communication protocols
+- Add tools to manipulate, zoom, and measure values on the chart
 - Implement user-defined chart styles and customization options
 - Enhance error handling and user notifications
+- Add support for multiple PLC communication protocols
 
 ## Getting Started
 

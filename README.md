@@ -15,7 +15,7 @@ This application is a WPF-based real-time charting tool for visualizing data fro
 
 Here are some features and improvements planned for future releases:
 
-- Implement MVVM (Model-View-ViewModel) design pattern to improve separation of concerns and testability
+- Implement MVVM (Model-View-ViewModel) design pattern
 - Improve charting performance by optimizing data handling and rendering
 - Add support for multiple PLC communication protocols
 - Implement user-defined chart styles and customization options

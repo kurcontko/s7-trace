@@ -11,6 +11,8 @@ This application is a WPF-based real-time charting tool for visualizing data fro
 - Start/stop recording of data
 - Supports multiple PLC variable types and chart series
 
+![](https://github.com/kurcontko/S7Trace/blob/main/S7Trace-Screenshot.png)
+
 ## Roadmap
 
 Here are some features and improvements planned for future releases:

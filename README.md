@@ -9,7 +9,7 @@ This application is a WPF-based real-time charting tool for visualizing data fro
 - Configurable PLC variables (name, area ID, type, size, offset, and enable/disable)
 - Real-time data visualization with charting
 - Start/stop recording of data
-- Supports multiple PLC variable types and chart series
+- Supports multiple PLC variable types
 
 ![](https://github.com/kurcontko/S7Trace/blob/main/S7Trace-Screenshot.png)
 
@@ -30,7 +30,7 @@ Here are some features and improvements planned for future releases:
 
 - .NET Framework 4.7.2 or higher
 - Visual Studio 2019 or newer
-- Sharp7 library (https://github.com/killnine/s7netplus)
+- Sharp7 library (https://snap7.sourceforge.net/sharp7.html)
 - LiveCharts (https://lvcharts.net/)
 
 ## Usage
@@ -53,5 +53,5 @@ This project is licensed under the [MIT License](https://choosealicense.com/lice
 
 ## Acknowledgments
 
-- [Sharp7](https://github.com/killnine/s7netplus) for providing the S7 communication library
+- [Sharp7](https://snap7.sourceforge.net/sharp7.html) for providing the S7 communication library
 - [LiveCharts](https://lvcharts.net/) for providing the charting library (alternatively, you can use other charting libraries like [OxyPlot](https://github.com/oxyplot/oxyplot) or [LiveCharts2](https://github.com/beto-rodriguez/LiveCharts2))

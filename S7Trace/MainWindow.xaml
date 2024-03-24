@@ -4,83 +4,91 @@
         xmlns:local="clr-namespace:S7Trace" 
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:charts="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-        Title="S7 Trace" Height="450" Width="800">
+        Title="S7 Trace" Height="539" Width="870">
 
-    <Window.Resources>
+   <Window.Resources>
 
-    </Window.Resources>
+   </Window.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+   <Grid>
+      <Grid.RowDefinitions>
+         <RowDefinition Height="Auto"/>
+         <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" Margin="10">
-            <StackPanel Orientation="Horizontal" Margin="10">
-                <Button x:Name="ConnectButton" Content="Connect" Click="ConnectButton_Click" Margin="5,0" Width="90" />
-                <Button x:Name="DisconnectButton" Content="Disconnect" Click="DisconnectButton_Click" Margin="5,0" Width="90" />
-                <Separator Width="132" Background="Transparent" />
-                <Button x:Name="StartRecordingButton" Content="Start Recording" Click="StartRecordingButton_Click" Margin="5,0" Width="120" />
-                <Button x:Name="StopRecordingButton" Content="Stop Recording" Click="StopRecordingButton_Click" Margin="5,0" Width="120" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="10">
-                <TextBlock Text="IP Address:" VerticalAlignment="Center" Margin="5,0" />
-                <TextBox x:Name="IpAddressTextBox" Width="123" Margin="5,0" />
-                <TextBlock Text="Rack:" VerticalAlignment="Center" Margin="5,0" />
-                <TextBox x:Name="RackTextBox" Width="50" Margin="5,0" />
-                <TextBlock Text="Slot:" VerticalAlignment="Center" Margin="5,0" />
-                <TextBox x:Name="SlotTextBox" Width="50" Margin="5,0" />
-            </StackPanel>
-        </StackPanel>
+      <StackPanel Orientation="Vertical" Margin="10">
+         <StackPanel Orientation="Horizontal" Margin="10">
+            <Button x:Name="ConnectButton" Content="Connect" Click="ConnectButton_Click" Margin="5,0" Width="90" />
+            <Button x:Name="DisconnectButton" Content="Disconnect" Click="DisconnectButton_Click" Margin="5,0" Width="90" />
+            <Separator Width="132" Background="Transparent" />
+            <Button x:Name="StartRecordingButton" Content="Start Recording" Click="StartRecordingButton_Click" Margin="5,0" Width="120" />
+            <Button x:Name="StopRecordingButton" Content="Stop Recording" Click="StopRecordingButton_Click" Margin="5,0" Width="120" />
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" Margin="10">
+            <TextBlock Text="IP Address:" VerticalAlignment="Center" Margin="5,0" />
+            <TextBox x:Name="IpAddressTextBox" Width="123" Margin="5,0" />
+            <TextBlock Text="Rack:" VerticalAlignment="Center" Margin="5,0" />
+            <TextBox x:Name="RackTextBox" Width="50" Margin="5,0" />
+            <TextBlock Text="Slot:" VerticalAlignment="Center" Margin="5,0" />
+            <TextBox x:Name="SlotTextBox" Width="50" Margin="5,0" />
+         </StackPanel>
+      </StackPanel>
 
-        <TabControl Grid.Row="1" Margin="10">
-            <TabItem Header="Configuration">
-                <DataGrid x:Name="ConfigDataGrid" AutoGenerateColumns="False">
-                    <DataGrid.Columns>
-                        <DataGridCheckBoxColumn Header="Enable" Binding="{Binding Enable}"/>
-                        <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
-                        <DataGridTemplateColumn Header="AreaID">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding AreaID}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.CellEditingTemplate>
-                                <DataTemplate>
-                                    <ComboBox ItemsSource="{Binding S7AreaValues, RelativeSource={RelativeSource AncestorType=Window}}"
+      <TabControl Grid.Row="1" Margin="10">
+         <TabItem Header="Configuration">
+            <StackPanel>
+               <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,5">
+                  <Button Content="Save" Margin="5" Width="90" Click="SaveButton_Click"/>
+                  <Button Content="Load" Margin="5" Width="90" Click="LoadButton_Click"/>
+                  <Button Content="Save As..." Margin="5" Width="90" Click="SaveAsButton_Click"/>
+                  <Button Content="Load As..." Margin="5" Width="90" Click="LoadAsButton_Click"/>
+               </StackPanel>
+               <DataGrid x:Name="ConfigDataGrid" AutoGenerateColumns="False" CanUserAddRows="True">
+                  <DataGrid.Columns>
+                     <DataGridCheckBoxColumn Header="Enable" Binding="{Binding Enable}"/>
+                     <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                     <DataGridTemplateColumn Header="AreaID">
+                        <DataGridTemplateColumn.CellTemplate>
+                           <DataTemplate>
+                              <TextBlock Text="{Binding AreaID}" />
+                           </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                           <DataTemplate>
+                              <ComboBox ItemsSource="{Binding S7AreaValues, RelativeSource={RelativeSource AncestorType=Window}}"
                                               SelectedItem="{Binding AreaID, UpdateSourceTrigger=PropertyChanged}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellEditingTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="DB Number" Binding="{Binding DBNumber}"/>
-                        <DataGridTemplateColumn Header="Type">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Type}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.CellEditingTemplate>
-                                <DataTemplate>
-                                    <ComboBox ItemsSource="{Binding S7WordLengthValues, RelativeSource={RelativeSource AncestorType=Window}}"
+                           </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                     </DataGridTemplateColumn>
+                     <DataGridTextColumn Header="DB Number" Binding="{Binding DBNumber}"/>
+                     <DataGridTemplateColumn Header="Type">
+                        <DataGridTemplateColumn.CellTemplate>
+                           <DataTemplate>
+                              <TextBlock Text="{Binding Type}" />
+                           </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                           <DataTemplate>
+                              <ComboBox ItemsSource="{Binding S7WordLengthValues, RelativeSource={RelativeSource AncestorType=Window}}"
                                               SelectedItem="{Binding Type, UpdateSourceTrigger=PropertyChanged}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellEditingTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Offset" Binding="{Binding Offset}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
-            <TabItem Header="Chart">
-                <charts:CartesianChart x:Name="liveChart" IsHitTestVisible="false">
-                    <charts:CartesianChart.AxisX>
-                        <charts:Axis Title="Time" />
-                    </charts:CartesianChart.AxisX>
-                    <charts:CartesianChart.AxisY>
-                        <charts:Axis Title="Value" />
-                    </charts:CartesianChart.AxisY>
-                </charts:CartesianChart>
-            </TabItem>
-        </TabControl>
-    </Grid>
+                           </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                     </DataGridTemplateColumn>
+                     <DataGridTextColumn Header="Offset" Binding="{Binding Offset}"/>
+                  </DataGrid.Columns>
+               </DataGrid>
+            </StackPanel>
+         </TabItem>
+         <TabItem Header="Chart">
+            <charts:CartesianChart x:Name="liveChart" IsHitTestVisible="false">
+               <charts:CartesianChart.AxisX>
+                  <charts:Axis Title="Time" />
+               </charts:CartesianChart.AxisX>
+               <charts:CartesianChart.AxisY>
+                  <charts:Axis Title="Value" />
+               </charts:CartesianChart.AxisY>
+            </charts:CartesianChart>
+         </TabItem>
+      </TabControl>
+   </Grid>
 </Window>

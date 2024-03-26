@@ -17,6 +17,10 @@ using S7Trace.Config;
 using log4net;
 using System.IO;
 using Microsoft.Win32;
+using S7Trace.Buffer;
+using System.Windows.Threading;
+using System.Windows.Media.Animation;
+using System.Windows.Media;
 
 namespace S7Trace
 {
@@ -30,6 +34,8 @@ namespace S7Trace
         private ConcurrentQueue<ChartData> chartDataQueue;
         private ConcurrentQueue<LogData> logDataQueue;
         private static readonly ILog log = LogManager.GetLogger(typeof(MainWindow));
+        private volatile bool isPlottingActive = false;
+        private CircularBuffer<string> logBuffer = new CircularBuffer<string>(100);
 
         public MainWindow()
         {
@@ -53,7 +59,13 @@ namespace S7Trace
             logDataQueue = new ConcurrentQueue<LogData>();
 
             UpdateButtonStates();
+
+            DispatcherTimer logUpdateTimer = new DispatcherTimer();
+            logUpdateTimer.Interval = TimeSpan.FromSeconds(1); // Update every second, adjust as needed
+            logUpdateTimer.Tick += LogUpdateTimer_Tick;
+            logUpdateTimer.Start();
         }
+
         public IEnumerable<S7WordLength> S7WordLengthValues => Enum.GetValues(typeof(S7WordLength)).Cast<S7WordLength>();
 
         public IEnumerable<S7Area> S7AreaValues => Enum.GetValues(typeof(S7Area)).Cast<S7Area>();
@@ -81,7 +93,6 @@ namespace S7Trace
                 MessageBox.Show("Please enter a valid slot number.");
                 return false;
             }
-
             return true;
         }
 
@@ -120,9 +131,11 @@ namespace S7Trace
                 //MessageBox.Show("Connected successfully!", "Connection", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 UpdateButtonStates();
+                ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Green);
             }
             else
             {
+                ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Red);
                 MessageBox.Show($"Connection failed (Error code: {result})", "Connection", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -143,6 +156,7 @@ namespace S7Trace
                 if (!plcService.IsConnected)
                 {
                     //MessageBox.Show("Disconnected successfully!");
+                    ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Gray);
                 }
                 else
                 {
@@ -156,6 +170,14 @@ namespace S7Trace
 
             // Update button states
             UpdateButtonStates();
+            var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
+            if (pulseAnimation != null)
+            {
+                pulseAnimation.Stop();
+            }
+
+            // Optionally, make the RecordingIndicator invisible after stopping the animation
+            RecordingIndicator.Visibility = Visibility.Collapsed;
         }
 
         private void StartRecordingButton_Click(object sender, RoutedEventArgs e)
@@ -167,12 +189,22 @@ namespace S7Trace
             Task.Run(() => plcService.ReadDataAsync(token, plcVariables, chartDataQueue, logDataQueue));
 
             // Start the UpdateChart method in a separate thread
-            Task.Run(() => UpdateChart());
+            Task.Run(() => UpdateChart(token));
+
+            // Start the logging thread
+            StartLogging(token);
 
             isRecording = true;
             UpdateButtonStates();
 
-            StartLogging();
+            RecordingIndicator.Visibility = Visibility.Visible;
+
+            var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
+            if (pulseAnimation != null)
+            {
+                Storyboard.SetTarget(pulseAnimation, RecordingIndicator);
+                pulseAnimation.Begin();
+            }
         }
 
         private void StopRecordingButton_Click(object sender, RoutedEventArgs e)
@@ -181,6 +213,14 @@ namespace S7Trace
 
             isRecording = false;
             UpdateButtonStates();
+            var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
+            if (pulseAnimation != null)
+            {
+                pulseAnimation.Stop();
+            }
+
+            // Optionally, make the RecordingIndicator invisible after stopping the animation
+            RecordingIndicator.Visibility = Visibility.Collapsed;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -219,16 +259,28 @@ namespace S7Trace
             }
         }
 
-        private void UpdateChart()
+        private void ActivatePlottingCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            isPlottingActive = true;
+        }
+
+        private void ActivatePlottingCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            isPlottingActive = false;
+        }
+
+        private void UpdateChart(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
             {
-            while (true)
-            {
-                    if (chartDataQueue.Count > 0)
+                if (chartDataQueue.Count > 0)
+                {
+                    while (chartDataQueue.TryDequeue(out ChartData chartData))
                     {
-                        while (chartDataQueue.TryDequeue(out ChartData chartData))
-                        {
-                        Dispatcher.Invoke(() =>
-                        {
+                        if (isPlottingActive)
+                        { 
+                            Dispatcher.Invoke(() =>
+                            {
                                 var chartSeries = liveChart.Series.FirstOrDefault(series => series.Title == chartData.Variable.Name);
 
                                 if (chartSeries == null)
@@ -250,13 +302,15 @@ namespace S7Trace
                                 {
                                     chartSeries.Values.RemoveAt(0);
                                 }
-                        });
+                            });
                         }
                     }
-                Thread.Sleep(200);
+                    Thread.Sleep(200);
+                }
             }
-            }
-        private void StartLogging()
+        }
+
+        private void StartLogging(CancellationToken cancellationToken)
         {
             string filePath = "log.csv";
             string fallbackFilePath = "fallback_log.csv";
@@ -265,7 +319,7 @@ namespace S7Trace
 
             Task.Run(async () =>
             {
-                while (true) // You might want a more graceful shutdown condition
+                while (!cancellationToken.IsCancellationRequested) // You might want a more graceful shutdown condition
                 {
                     if (!logDataQueue.IsEmpty)
                     {
@@ -274,6 +328,7 @@ namespace S7Trace
                         while (logDataQueue.TryDequeue(out LogData logData))
                         {
                             logObjects.Add(logData);
+                            logBuffer.Add(logData.ToString());
                         }
                         
                         if (logObjects.Count > 0)
@@ -287,6 +342,12 @@ namespace S7Trace
                     }
                 }
             });
+        }
+
+        private void LogUpdateTimer_Tick(object sender, EventArgs e)
+        {
+            // Assuming logListView is your ListView control for displaying logs
+            logListView.ItemsSource = logBuffer.ToArray();
         }
 
         public void SaveConfiguration(string filePath)
@@ -332,15 +393,15 @@ namespace S7Trace
                 MessageBox.Show($"Failed to load configuration: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 plcVariables = new ObservableCollection<PLCVariable>
                 {
-                        new PLCVariable
-                        {
-                            Name = "Var1",
-                            AreaID = S7Area.DB,
-                            Type = S7WordLength.Real,
-                            DBNumber = 1,
-                            Offset = 0,
-                            Enable = true
-                        }
+                    new PLCVariable
+                    {
+                        Name = "Var1",
+                        AreaID = S7Area.DB,
+                        Type = S7WordLength.Real,
+                        DBNumber = 1,
+                        Offset = 0,
+                        Enable = true
+                    }
                 };
                 ConfigDataGrid.ItemsSource = plcVariables;
 

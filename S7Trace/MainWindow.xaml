@@ -4,9 +4,16 @@
         xmlns:local="clr-namespace:S7Trace" 
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:charts="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-        Title="S7 Trace" Height="539" Width="870">
+        Title="S7 Trace" Height="720" Width="1080">
 
    <Window.Resources>
+
+      <Storyboard x:Key="PulseAnimation">
+         <DoubleAnimation Storyboard.TargetName="RecordingIndicator"
+                           Storyboard.TargetProperty="Opacity"
+                           From="1.0" To="0.1" Duration="0:0:1"
+                           AutoReverse="True" RepeatBehavior="Forever"/>
+      </Storyboard>
 
    </Window.Resources>
 
@@ -18,9 +25,11 @@
 
       <StackPanel Orientation="Vertical" Margin="10">
          <StackPanel Orientation="Horizontal" Margin="10">
+            <Ellipse x:Name="ConnectionStatusIndicator" Width="15" Height="15" Fill="Gray" Stroke="Black" Margin="5,0,5,0"/>
             <Button x:Name="ConnectButton" Content="Connect" Click="ConnectButton_Click" Margin="5,0" Width="90" />
             <Button x:Name="DisconnectButton" Content="Disconnect" Click="DisconnectButton_Click" Margin="5,0" Width="90" />
             <Separator Width="132" Background="Transparent" />
+            <Ellipse x:Name="RecordingIndicator" Width="15" Height="15" Fill="Red" Visibility="Collapsed" Margin="5,0"/>
             <Button x:Name="StartRecordingButton" Content="Start Recording" Click="StartRecordingButton_Click" Margin="5,0" Width="120" />
             <Button x:Name="StopRecordingButton" Content="Stop Recording" Click="StopRecordingButton_Click" Margin="5,0" Width="120" />
          </StackPanel>
@@ -79,15 +88,29 @@
                </DataGrid>
             </StackPanel>
          </TabItem>
-         <TabItem Header="Chart">
-            <charts:CartesianChart x:Name="liveChart" IsHitTestVisible="false">
-               <charts:CartesianChart.AxisX>
-                  <charts:Axis Title="Time" />
-               </charts:CartesianChart.AxisX>
-               <charts:CartesianChart.AxisY>
-                  <charts:Axis Title="Value" />
-               </charts:CartesianChart.AxisY>
-            </charts:CartesianChart>
+         <TabItem Header="Live Chart">
+            <StackPanel>
+               <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,5">
+                  <CheckBox x:Name="activatePlottingCheckBox" Content="Activate" Grid.Row="0" Margin="10,0,0,0" Checked="ActivatePlottingCheckBox_Checked" Unchecked="ActivatePlottingCheckBox_Unchecked"/>
+               </StackPanel>
+               <charts:CartesianChart x:Name="liveChart" IsHitTestVisible="false" Height="534">
+                  <charts:CartesianChart.AxisX>
+                     <charts:Axis Title="Time" />
+                  </charts:CartesianChart.AxisX>
+                  <charts:CartesianChart.AxisY>
+                     <charts:Axis Title="Value" />
+                  </charts:CartesianChart.AxisY>
+               </charts:CartesianChart>
+            </StackPanel>
+         </TabItem>
+         <TabItem Header="Logs">
+            <ListView x:Name="logListView">
+               <ListView.View>
+                  <GridView>
+                     <GridViewColumn Header="Log Entry" DisplayMemberBinding="{Binding}" Width="Auto"/>
+                  </GridView>
+               </ListView.View>
+            </ListView>
          </TabItem>
       </TabControl>
    </Grid>

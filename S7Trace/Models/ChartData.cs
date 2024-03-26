@@ -2,9 +2,9 @@
 
 namespace S7Trace.Models
 {
-   public class ChartData
-   {
-      public PLCVariable Variable { get; set; }
-      public double Value { get; set; }
-   }
+    public class ChartData
+    {
+        public PLCVariable Variable { get; set; }
+        public double Value { get; set; }
+    }
 }

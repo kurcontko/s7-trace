@@ -24,9 +24,9 @@ namespace S7Trace.Buffer
             head = (head + 1) % buffer.Length;
             buffer[head] = item;
             if (isFull)
-            tail = (tail + 1) % buffer.Length;
+                tail = (tail + 1) % buffer.Length;
             else if (head == tail)
-            isFull = true;
+                isFull = true;
         }
 
         public T[] ToArray()
@@ -35,7 +35,7 @@ namespace S7Trace.Buffer
             int length = isFull ? buffer.Length : (head >= tail ? head - tail + 1 : buffer.Length - tail + head + 1);
             T[] result = new T[length];
             for (int i = 0; i < length; i++)
-            result[i] = buffer[(tail + i) % buffer.Length];
+                result[i] = buffer[(tail + i) % buffer.Length];
             return result;
         }
 

@@ -35,64 +35,63 @@ namespace S7Trace.PLC
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-            try {
-                // Create a new instance of the S7MultiVar class
-                S7MultiVar reader = new S7MultiVar(plcClient);
-
-                // Add enabled variables to the reader
-                List<PLCVariable> enabledVariables = new List<PLCVariable>();
-                int enabledVariableCount = variables.Count(v => v.Enable);
-                byte[][] buffers = new byte[enabledVariableCount][];
-                int bufferIndex = 0;
-
-                foreach (var variable in variables)
+                try 
                 {
-                    if (variable.Enable)
+                    // Create a new instance of the S7MultiVar class
+                    S7MultiVar reader = new S7MultiVar(plcClient);
+
+                    // Add enabled variables to the reader
+                    List<PLCVariable> enabledVariables = new List<PLCVariable>();
+                    int enabledVariableCount = variables.Count(v => v.Enable);
+                    byte[][] buffers = new byte[enabledVariableCount][];
+                    int bufferIndex = 0;
+
+                    foreach (var variable in variables)
                     {
-                        int variableSize = GetBufferSizeForVariableType(variable.Type);
-                        int bufferSize = variableSize * 2; // Word to Byte
-                        buffers[bufferIndex] = new byte[bufferSize];
-                        reader.Add((int)variable.AreaID, (int)variable.Type, variable.DBNumber, variable.Offset, variableSize, ref buffers[bufferIndex]);
-                        enabledVariables.Add(variable);
-                        bufferIndex++;
-                    }
-                }
-
-                // Read all variables in the reader
-                int result = reader.Read();
-
-                // Check if the read operation was successful
-                if (result == 0)
-                {
-                    var timestamp = DateTime.Now;
-                    log.Info("Data read from the PLC successfully.");
-                    // Extract the values from the buffers and enqueue them
-                    for (int i = 0; i < enabledVariables.Count; i++)
-                    {
-                        // Extract the value from the buffer
-                        dynamic value = ExtractValueFromBuffer(enabledVariables[i], buffers[i]);
-
-                        // Enqueue the data to the chart queue
-                        try {
-                        double chartValue = value is double ? value : Convert.ToDouble(value);
-                        chartDataQueue.Enqueue(new ChartData { Variable = enabledVariables[i], Value = chartValue });  
-                        } catch (Exception ex) {
-                        log.Warn($"Failed to convert value to double: {value}", ex);
+                        if (variable.Enable)
+                        {
+                            int variableSize = GetBufferSizeForVariableType(variable.Type);
+                            int bufferSize = variableSize * 2; // Word to Byte
+                            buffers[bufferIndex] = new byte[bufferSize];
+                            reader.Add((int)variable.AreaID, (int)variable.Type, variable.DBNumber, variable.Offset, variableSize, ref buffers[bufferIndex]);
+                            enabledVariables.Add(variable);
+                            bufferIndex++;
                         }
-                     
-                        // Enqueue the data to the logger queue
-                        logDataQueue.Enqueue(new LogData(timestamp, enabledVariables[i].Name, enabledVariables[i].Type.ToString(), value));
                     }
-                }
 
-                await Task.Delay(10, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                log.Warn("An error occurred while reading data from the PLC", ex);
-                AttemptReconnect();
-                await Task.Delay(100, cancellationToken);
-            }
+                    // Read all variables in the reader
+                    int result = reader.Read();
+
+                    // Check if the read operation was successful
+                    if (result == 0)
+                    {
+                        var timestamp = DateTime.Now;
+                        log.Info("Data read from the PLC successfully.");
+                        // Extract the values from the buffers and enqueue them
+                        for (int i = 0; i < enabledVariables.Count; i++)
+                        {
+                            // Extract the value from the buffer
+                            dynamic value = ExtractValueFromBuffer(enabledVariables[i], buffers[i]);
+                            // Enqueue the data to the chart queue
+                            try {
+                                double chartValue = value is double ? value : Convert.ToDouble(value);
+                                chartDataQueue.Enqueue(new ChartData { Variable = enabledVariables[i], Value = chartValue });  
+                            } catch (Exception ex) {
+                                log.Warn($"Failed to convert value to double: {value}", ex);
+                            }
+                            // Enqueue the data to the logger queue
+                            logDataQueue.Enqueue(new LogData(timestamp, enabledVariables[i].Name, enabledVariables[i].Type.ToString(), value));
+                        }
+                    }
+
+                    await Task.Delay(10, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    log.Warn("An error occurred while reading data from the PLC", ex);
+                    AttemptReconnect();
+                    await Task.Delay(100, cancellationToken);
+                }
             }
         }
 

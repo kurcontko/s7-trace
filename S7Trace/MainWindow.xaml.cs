@@ -128,8 +128,6 @@ namespace S7Trace
             // Check the connection result
             if (result == 0)
             {
-                //MessageBox.Show("Connected successfully!", "Connection", MessageBoxButton.OK, MessageBoxImage.Information);
-
                 UpdateButtonStates();
                 ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Green);
             }
@@ -172,11 +170,7 @@ namespace S7Trace
             UpdateButtonStates();
             var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
             if (pulseAnimation != null)
-            {
                 pulseAnimation.Stop();
-            }
-
-            // Optionally, make the RecordingIndicator invisible after stopping the animation
             RecordingIndicator.Visibility = Visibility.Collapsed;
         }
 
@@ -215,11 +209,7 @@ namespace S7Trace
             UpdateButtonStates();
             var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
             if (pulseAnimation != null)
-            {
                 pulseAnimation.Stop();
-            }
-
-            // Optionally, make the RecordingIndicator invisible after stopping the animation
             RecordingIndicator.Visibility = Visibility.Collapsed;
         }
 
@@ -241,10 +231,7 @@ namespace S7Trace
             saveFileDialog.AddExtension = true;
 
             if (saveFileDialog.ShowDialog() == true)
-            {
-            // Save the configuration to the chosen file
-            SaveConfiguration(saveFileDialog.FileName);
-            }
+                SaveConfiguration(saveFileDialog.FileName);
         }
 
         private void LoadAsButton_Click(object sender, RoutedEventArgs e)
@@ -253,10 +240,7 @@ namespace S7Trace
             openFileDialog.Filter = "JSON Files (*.json)|*.json|All files (*.*)|*.*";
 
             if (openFileDialog.ShowDialog() == true)
-            {
-            // Load the configuration from the selected file
-            LoadConfiguration(openFileDialog.FileName);
-            }
+                LoadConfiguration(openFileDialog.FileName);
         }
 
         private void ActivatePlottingCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -319,7 +303,7 @@ namespace S7Trace
 
             Task.Run(async () =>
             {
-                while (!cancellationToken.IsCancellationRequested) // You might want a more graceful shutdown condition
+                while (!cancellationToken.IsCancellationRequested) 
                 {
                     if (!logDataQueue.IsEmpty)
                     {
@@ -332,13 +316,11 @@ namespace S7Trace
                         }
                         
                         if (logObjects.Count > 0)
-                        {
                             logger.EnqueueLogs(logObjects.ToArray());
-                        }
                     }
                     else
                     {
-                        await Task.Delay(100); // Use non-blocking wait
+                        await Task.Delay(100); 
                     }
                 }
             });
@@ -346,7 +328,6 @@ namespace S7Trace
 
         private void LogUpdateTimer_Tick(object sender, EventArgs e)
         {
-            // Assuming logListView is your ListView control for displaying logs
             logListView.ItemsSource = logBuffer.ToArray();
         }
 
@@ -354,16 +335,16 @@ namespace S7Trace
         {
             try
             {
-            var config = new Configuration()
-            {
-                IPAddress = IpAddressTextBox.Text,
-                Rack = int.TryParse(RackTextBox.Text, out int rack) ? rack : 0,
-                Slot = int.TryParse(SlotTextBox.Text, out int slot) ? slot : 0,
-                Variables = plcVariables.ToList()
-            };
+                var config = new Configuration()
+                {
+                    IPAddress = IpAddressTextBox.Text,
+                    Rack = int.TryParse(RackTextBox.Text, out int rack) ? rack : 0,
+                    Slot = int.TryParse(SlotTextBox.Text, out int slot) ? slot : 0,
+                    Variables = plcVariables.ToList()
+                };
 
-            string jsonString = JsonSerializer.Serialize(config);
-            File.WriteAllText(filePath, jsonString);
+                string jsonString = JsonSerializer.Serialize(config);
+                File.WriteAllText(filePath, jsonString);
             }
             catch (Exception ex)
             {

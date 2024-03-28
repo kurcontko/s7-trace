@@ -27,7 +27,7 @@ namespace S7Trace.Logger
         {
             foreach (var logObject in logObjects)
             {
-            logQueue.Enqueue(logObject);
+                logQueue.Enqueue(logObject);
             }
         }
 
@@ -35,31 +35,31 @@ namespace S7Trace.Logger
         {
             loggingTask = Task.Run(() =>
             {
-            List<string> batch = new List<string>(BatchSize);
+                List<string> batch = new List<string>(BatchSize);
 
-            while (!isStopping || !logQueue.IsEmpty)
-            {
-                if (logQueue.TryDequeue(out object logObject))
+                while (!isStopping || !logQueue.IsEmpty)
                 {
-                    batch.Add(logObject.ToString());
-                    if (batch.Count >= BatchSize)
+                    if (logQueue.TryDequeue(out object logObject))
                     {
-                        WriteBatchToFile(batch);
-                        batch.Clear();
+                        batch.Add(logObject.ToString());
+                        if (batch.Count >= BatchSize)
+                        {
+                            WriteBatchToFile(batch);
+                            batch.Clear();
+                        }
+                    }
+                    else
+                    {
+                        // Small delay to prevent a tight loop when the queue is momentarily empty
+                        Task.Delay(100).Wait();
                     }
                 }
-                else
-                {
-                // Small delay to prevent a tight loop when the queue is momentarily empty
-                Task.Delay(100).Wait();
-                }
-            }
 
-            // Ensure any remaining logs are flushed at the end
-            if (batch.Count > 0)
-            {
-                WriteBatchToFile(batch);
-            }
+                // Ensure any remaining logs are flushed at the end
+                if (batch.Count > 0)
+                {
+                    WriteBatchToFile(batch);
+                }
             });
         }
 
@@ -67,20 +67,20 @@ namespace S7Trace.Logger
         {
             if (File.Exists(fallbackFilePath) && new FileInfo(fallbackFilePath).Length > 0)
             {
-            try
-            {
-                var lines = File.ReadAllLines(fallbackFilePath);
-                lock (fileLock)
+                try
                 {
-                    File.AppendAllLines(filePath, lines);
-                    File.WriteAllText(fallbackFilePath, string.Empty); // Clear fallback log
+                    var lines = File.ReadAllLines(fallbackFilePath);
+                    lock (fileLock)
+                    {
+                        File.AppendAllLines(filePath, lines);
+                        File.WriteAllText(fallbackFilePath, string.Empty); // Clear fallback log
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                // Handle exceptions during merging
-                Console.WriteLine($"Error merging fallback log: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    // Handle exceptions during merging
+                    Console.WriteLine($"Error merging fallback log: {ex.Message}");
+                }
             }
         }
 
@@ -90,7 +90,7 @@ namespace S7Trace.Logger
             bool writeSuccessful = WriteToFileSafe(combinedLog, filePath);
             if (writeSuccessful)
             {
-            MergeFallbackLogIfExists();
+                MergeFallbackLogIfExists();
             }
         }
 
@@ -98,23 +98,23 @@ namespace S7Trace.Logger
         {
             try
             {
-            lock (fileLock)
-            {
-                File.AppendAllText(filePath, line + Environment.NewLine);
-            }
-            return true;
-            }
-            catch (IOException)
-            {
-            // Primary file is locked or unavailable, write to fallback file
-            WriteToFileSafe(line, fallbackFilePath);
-            return false;
+                lock (fileLock)
+                {
+                    File.AppendAllText(filePath, line + Environment.NewLine);
+                }
+                return true;
+                }
+                catch (IOException)
+                {
+                    // Primary file is locked or unavailable, write to fallback file
+                    WriteToFileSafe(line, fallbackFilePath);
+                    return false;
             }
             catch (Exception ex)
             {
-            // Handle other exceptions
-            Console.WriteLine($"Error writing to file: {ex.Message}");
-            return false;
+                // Handle other exceptions
+                Console.WriteLine($"Error writing to file: {ex.Message}");
+                return false;
             }
         }
 

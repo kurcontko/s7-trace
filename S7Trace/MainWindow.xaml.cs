@@ -96,121 +96,150 @@ namespace S7Trace
             return true;
         }
 
+        private void UpdateConnectionButtonUI(bool isConnected)
+        {
+            ToggleConnectionButton.Content = isConnected ? "Disconnect" : "Connect";
+            //ToggleConnectionButton.Background = isConnected ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
+            ToggleConnectionButton.ToolTip = isConnected ? "Disconnect from the PLC" : "Connect to the PLC";
+        }
+
+        private void UpdateRecordingButtonUI(bool isRecording, bool isConnected)
+        {
+            ToggleRecordingButton.IsEnabled = isConnected;
+            ToggleRecordingButton.Content = isRecording ? "Stop Recording" : "Start Recording";
+            ToggleRecordingButton.ToolTip = isRecording ? "Stop recording data from the PLC" : "Start recording data from the PLC";
+            if (!ToggleRecordingButton.IsEnabled)
+            {
+                ToggleRecordingButton.ToolTip = "Connect to the PLC to start recording";
+            }
+        }
+
         private void UpdateButtonStates()
         {
             bool isConnected = plcService.IsConnected;
 
-            ConnectButton.IsEnabled = !isConnected;
-            DisconnectButton.IsEnabled = isConnected;
-            StartRecordingButton.IsEnabled = isConnected && !isRecording;
-            StopRecordingButton.IsEnabled = isConnected && isRecording;
+            UpdateConnectionButtonUI (isConnected);
+            UpdateRecordingButtonUI(isRecording, isConnected);
         }
 
         private bool isRecording = false;
 
-        private void ConnectButton_Click(object sender, RoutedEventArgs e)
+
+        private void ToggleConnectionButton_Click(object sender, RoutedEventArgs e)
         {
-            
-            if (plcService == null)
+            if (plcService == null || !plcService.IsConnected)
             {
-                plcService = new PlcService();
-            }
-
-            // Get the IP address, rack, and slot from the user input
-            if (!ValidateInput(out string ipAddress, out int rack, out int slot))
-            {
-                return;
-            }
-
-            // Connect to the PLC
-            int result = plcService.Connect(ipAddress, rack, slot);
-
-            // Check the connection result
-            if (result == 0)
-            {
-                UpdateButtonStates();
-                ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Green);
-            }
-            else
-            {
-                ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Red);
-                MessageBox.Show($"Connection failed (Error code: {result})", "Connection", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void DisconnectButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (plcService == null)
-            {
-            plcService = new PlcService();
-            }
-
-            try
-            {
-                // Disconnect from the PLC
-                plcService.Disconnect();
-
-                // Check the disconnection result
-                if (!plcService.IsConnected)
+                if (plcService == null)
                 {
-                    //MessageBox.Show("Disconnected successfully!");
-                    ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Gray);
+                    plcService = new PlcService();
+                }
+
+                // Get the IP address, rack, and slot from the user input
+                if (!ValidateInput(out string ipAddress, out int rack, out int slot))
+                {
+                    return;
+                }
+
+                // Connect to the PLC
+                int result = plcService.Connect(ipAddress, rack, slot);
+
+                // Check the connection result
+                if (result == 0)
+                {
+                    UpdateButtonStates();
+                    ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Green);
+                    ToggleConnectionButton.Content = "Disconnect";
                 }
                 else
                 {
-                    MessageBox.Show("Disconnection failed.");
+                    ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Red);
+                    MessageBox.Show($"Connection failed (Error code: {result})", "Connection", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+                
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show($"Disconnection failed due to an exception: {ex.Message}");
-            }
+                // Disconnect
+                if (plcService == null)
+                {
+                    plcService = new PlcService();
+                }
 
-            // Update button states
-            UpdateButtonStates();
-            var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
-            if (pulseAnimation != null)
-                pulseAnimation.Stop();
-            RecordingIndicator.Visibility = Visibility.Collapsed;
+                try
+                {
+                    // Disconnect from the PLC
+                    plcService.Disconnect();
+
+                    // Check the disconnection result
+                    if (!plcService.IsConnected)
+                    {
+                        //MessageBox.Show("Disconnected successfully!");
+                        ConnectionStatusIndicator.Fill = new SolidColorBrush(Colors.Gray);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Disconnection failed.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Disconnection failed due to an exception: {ex.Message}");
+                }
+
+                // Update button states
+                UpdateButtonStates();
+                var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
+                if (pulseAnimation != null)
+                    pulseAnimation.Stop();
+                RecordingIndicator.Visibility = Visibility.Collapsed;
+                ToggleConnectionButton.Content = "Connect";
+            }
+            UpdateButtonStates(); // This may need to be adjusted to reflect new button states.
         }
 
-        private void StartRecordingButton_Click(object sender, RoutedEventArgs e)
+        private void ToggleRecordingButton_Click(object sender, RoutedEventArgs e)
         {
-            cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken token = cancellationTokenSource.Token;
-
-            // Start the ReadPlcData method in a separate thread
-            Task.Run(() => plcService.ReadDataAsync(token, plcVariables, chartDataQueue, logDataQueue));
-
-            // Start the UpdateChart method in a separate thread
-            Task.Run(() => UpdateChart(token));
-
-            // Start the logging thread
-            StartLogging(token);
-
-            isRecording = true;
-            UpdateButtonStates();
-
-            RecordingIndicator.Visibility = Visibility.Visible;
-
-            var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
-            if (pulseAnimation != null)
+            if (!isRecording)
             {
-                Storyboard.SetTarget(pulseAnimation, RecordingIndicator);
-                pulseAnimation.Begin();
+                cancellationTokenSource = new CancellationTokenSource();
+                CancellationToken token = cancellationTokenSource.Token;
+
+                // Start the ReadPlcData method in a separate thread
+                Task.Run(() => plcService.ReadDataAsync(token, plcVariables, chartDataQueue, logDataQueue));
+
+                // Start the UpdateChart method in a separate thread
+                Task.Run(() => UpdateChart(token));
+
+                // Start the logging thread
+                StartLogging(token);
+
+                isRecording = true;
+                UpdateButtonStates();
+
+                RecordingIndicator.Visibility = Visibility.Visible;
+
+                var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
+                if (pulseAnimation != null)
+                {
+                    Storyboard.SetTarget(pulseAnimation, RecordingIndicator);
+                    pulseAnimation.Begin();
+                }
+                ToggleRecordingButton.Content = "Stop Recording";
             }
-        }
+            else
+            {
+                // Stop recording
+                cancellationTokenSource?.Cancel();
 
-        private void StopRecordingButton_Click(object sender, RoutedEventArgs e)
-        {
-            cancellationTokenSource?.Cancel();
-
-            isRecording = false;
-            UpdateButtonStates();
-            var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
-            if (pulseAnimation != null)
-                pulseAnimation.Stop();
-            RecordingIndicator.Visibility = Visibility.Collapsed;
+                isRecording = false;
+                UpdateButtonStates();
+                var pulseAnimation = FindResource("PulseAnimation") as Storyboard;
+                if (pulseAnimation != null)
+                    pulseAnimation.Stop();
+                RecordingIndicator.Visibility = Visibility.Collapsed;
+                ToggleRecordingButton.Content = "Start Recording";
+            }
+            UpdateButtonStates(); // Adjust as necessary.
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -391,6 +420,11 @@ namespace S7Trace
                 RackTextBox.Text = "0";
                 SlotTextBox.Text = "0";
             }
+        }
+
+        private void ConfigDataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

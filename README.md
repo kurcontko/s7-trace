@@ -1,28 +1,32 @@
 # S7Trace
-Real-time PLC Data Charting Application
+Real-time PLC Data Logging and Charting Application
 
-This application is a WPF-based real-time charting tool for visualizing data from PLCs using the S7 communication protocol. The application allows users to configure PLC variables, connect to the PLC, and display real-time data on charts.
+S7Trace is a robust, WPF-based application designed for real-time data logging and charting from PLCs using old, battletested the Siemens S7 communication protocol. It offers a user-friendly interface to configure PLC variables, connect to PLCs, log data to CSV files, and visualize real-time data through dynamic charts.
 
 ## Features
 
 - Configurable connection settings (IP address, rack, and slot)
 - Configurable PLC variables (name, area ID, type, size, offset, and enable/disable)
+- CSV Logging of data
 - Real-time data visualization with charting
-- Start/stop recording of data
 - Supports multiple PLC variable types
 
-![](https://github.com/kurcontko/S7Trace/blob/main/S7Trace-Screenshot.png)
+![](https://github.com/kurcontko/S7Trace/blob/main/S7Trace-Screenshot-Config.png)
 
 ## Roadmap
 
 Here are some features and improvements planned for future releases:
 
-- Implement MVVM (Model-View-ViewModel) design pattern
+- Improve logging
+- Implement database logging
 - Improve charting performance by optimizing data handling and rendering
 - Add tools to manipulate, zoom, and measure values on the chart
 - Implement user-defined chart styles and customization options
 - Enhance error handling and user notifications
+- Add support for UDP or TCP communication
 - Add support for multiple PLC communication protocols
+- Add support for more protocols and devices
+- Implement MVVM (Model-View-ViewModel) design pattern
 
 ## Getting Started
 
@@ -35,13 +39,14 @@ Here are some features and improvements planned for future releases:
 
 ## Usage
 
-1. Launch the application
-2. Configure the connection settings (IP address, rack, and slot)
-3. Configure the PLC variables you want to monitor
-4. Click "Connect" to establish a connection with the PLC
-5. Click "Start Recording" to begin charting the data in real-time
-6. Click "Stop Recording" to stop the charting process
-7. Click "Disconnect" to close the connection with the PLC
+1. Launch the S7Trace application.
+2. Configure the connection settings (IP address, rack, and slot).
+3. Set up the PLC variables you wish to monitor.
+4. Connect to your PLC by clicking "Connect".
+5. Start Recording to begin logging data.
+6. Activate charting if you would like to visualize the data in real-time.
+7. Stop Recording when you're done logging data.
+8. Disconnect from the PLC.
 
 ## Contributing
 
